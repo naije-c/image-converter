@@ -1,31 +1,39 @@
 @echo off
-chcp 65001 >nul
+setlocal
 cd /d "%~dp0"
-title JPG to PNG - 本地图片转换器
+title JPG to PNG Local Converter
 
-where node >nul 2>nul
-if errorlevel 1 (
-  echo.
-  echo 未找到 Node.js，请先安装 Node.js 20 或更高版本。
-  echo https://nodejs.org/
-  echo.
-  pause
-  exit /b 1
-)
+where node >nul 2>&1
+if errorlevel 1 goto no_node
 
-if not exist "node_modules\sharp" (
-  echo 首次运行，正在安装图片处理依赖...
-  call npm install
-  if errorlevel 1 (
-    echo.
-    echo 依赖安装失败，请检查网络后重试。
-    pause
-    exit /b 1
-  )
-)
+if not exist "node_modules\sharp\package.json" goto install_deps
+goto start
 
-set OPEN_BROWSER=1
+:install_deps
+echo Installing dependencies for first run...
+call npm install
+if errorlevel 1 goto install_failed
+
+:start
+if not defined OPEN_BROWSER set "OPEN_BROWSER=1"
 node server.mjs
+set "EXIT_CODE=%ERRORLEVEL%"
 echo.
-echo 本地转换器已停止。
+echo Server stopped.
 pause
+exit /b %EXIT_CODE%
+
+:no_node
+echo.
+echo Node.js 20 or newer is required.
+echo Download: https://nodejs.org/
+echo.
+pause
+exit /b 1
+
+:install_failed
+echo.
+echo Dependency installation failed. Please check the network and try again.
+echo.
+pause
+exit /b 1
