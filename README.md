@@ -59,12 +59,3 @@ server.mjs              本地 HTTP 服务
 test/convert.test.mjs   自动化测试
 启动图片转换器.bat      Windows 一键启动
 ```
-
-## Git 与推送
-
-项目已初始化为 `main` 分支。创建 GitHub 仓库后执行：
-
-```powershell
-git remote add origin https://github.com/<你的用户名>/<仓库名>.git
-git push -u origin main
-```
