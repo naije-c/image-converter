@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="color-scheme" content="light" />
     <meta name="theme-color" content="#f6f1e9" />
-    <meta name="description" content="完全在本地运行的 JPG 转 PNG 工具，可设定输出文件大小上限。" />
-    <title>JPG → PNG · 本地图片转换器</title>
+    <meta name="description" content="完全在本地运行的批量 JPG 转 PNG 工具，可设定每张输出文件的大小上限。" />
+    <title>JPG → PNG · 本地批量图片转换器</title>
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="stylesheet" href="/styles.css" />
   </head>
@@ -24,14 +24,14 @@
 
     <main class="page-shell">
       <section class="hero" aria-labelledby="page-title">
-        <p class="eyebrow">JPG TO PNG · LOCAL FIRST</p>
+        <p class="eyebrow">JPG TO PNG · BATCH LOCAL</p>
         <h1 id="page-title">把 JPG 变成<br /><span>刚刚好的 PNG。</span></h1>
         <p class="hero-copy">
-          原图不上传、不经过云端。只需设置输出上限，工具会自动调整 PNG 的调色板和分辨率，让文件严格小于目标大小。
+          一次处理整批图片。原图不上传、不经过云端，只需设置每张图片的输出上限，工具会自动调整 PNG 的调色板和分辨率。
         </p>
         <div class="hero-notes" aria-label="产品特点">
-          <span>无需登录</span>
-          <span>批量处理预留</span>
+          <span>批量转换</span>
+          <span>ZIP 打包下载</span>
           <span>离线可用</span>
         </div>
       </section>
@@ -40,32 +40,35 @@
         <div class="card-heading">
           <div>
             <p class="step-label">STEP 01</p>
-            <h2 id="converter-title">选择一张 JPG</h2>
+            <h2 id="converter-title">选择 JPG 图片</h2>
           </div>
-          <span class="format-tag">JPG / JPEG</span>
+          <span class="format-tag">可多选 · 最多 20 张</span>
         </div>
 
         <div id="dropZone" class="drop-zone" tabindex="0" role="button" aria-controls="fileInput">
-          <input id="fileInput" type="file" accept=".jpg,.jpeg,image/jpeg" hidden />
+          <input id="fileInput" type="file" accept=".jpg,.jpeg,image/jpeg" multiple hidden />
           <div id="dropEmpty" class="drop-empty">
             <div class="upload-icon" aria-hidden="true">
               <svg viewBox="0 0 24 24" fill="none">
                 <path d="M12 16V4m0 0L7.5 8.5M12 4l4.5 4.5M5 14.5v3.25A2.25 2.25 0 0 0 7.25 20h9.5A2.25 2.25 0 0 0 19 17.75V14.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" />
               </svg>
             </div>
-            <p class="drop-title">拖入 JPG，或点击选择</p>
-            <p class="drop-hint">支持单张图片，最大 50 MB</p>
+            <p class="drop-title">拖入一张或多张 JPG</p>
+            <p class="drop-hint">点击选择多张图片，单张最大 50 MB</p>
           </div>
 
-          <div id="filePreview" class="file-preview" hidden>
-            <div class="preview-frame">
-              <img id="previewImage" alt="待转换图片预览" />
+          <div id="filePreview" class="batch-preview" hidden>
+            <div class="batch-toolbar">
+              <div>
+                <p class="file-kicker">已选择的图片</p>
+                <p id="batchSummary" class="batch-summary"></p>
+              </div>
+              <button id="addFilesBtn" class="mini-button" type="button">继续添加</button>
             </div>
-            <div class="file-details">
-              <p class="file-kicker">已选择</p>
-              <p id="fileName" class="file-name"></p>
-              <p id="fileMeta" class="file-meta"></p>
-              <button id="changeFileBtn" class="text-button" type="button">重新选择</button>
+            <div id="fileList" class="file-list" aria-live="polite"></div>
+            <div class="batch-footer">
+              <p id="batchHint" class="batch-hint">转换会按顺序逐张处理。</p>
+              <button id="clearFilesBtn" class="text-button" type="button">清空全部</button>
             </div>
           </div>
         </div>
@@ -74,7 +77,7 @@
           <div class="target-heading">
             <div>
               <p class="step-label">STEP 02</p>
-              <label for="targetSize">输出文件小于</label>
+              <label for="targetSize">每张图片小于</label>
             </div>
             <div class="size-input-wrap">
               <input id="targetSize" type="number" min="0.05" max="100" step="0.05" value="1" inputmode="decimal" />
@@ -90,7 +93,7 @@
             <button class="preset-button" type="button" data-size="10">10 MB</button>
           </div>
 
-          <p class="target-hint">PNG 没有类似 JPG 的质量滑杆。工具会保留尽可能高的分辨率，必要时减少颜色数量。</p>
+          <p class="target-hint">大小上限会应用到批次中的每一张图片，整批预计输出总量最多 500 MB。PNG 没有质量滑杆，工具会保留尽可能高的分辨率，必要时减少颜色数量。</p>
         </div>
 
         <button id="convertBtn" class="primary-button" type="button" disabled>
@@ -103,7 +106,7 @@
         </button>
 
         <div id="statusMessage" class="status-message" role="status" aria-live="polite">
-          请选择一张 JPG 图片开始转换
+          请选择一张或多张 JPG 图片开始转换
         </div>
       </section>
 
@@ -115,28 +118,29 @@
         </div>
         <div class="result-copy">
           <p class="step-label">CONVERSION COMPLETE</p>
-          <h2 id="result-title">已生成符合大小要求的 PNG</h2>
+          <h2 id="result-title">整批 PNG 已处理完成</h2>
           <p id="resultSummary" class="result-summary"></p>
           <div class="result-metrics">
             <div>
-              <span>文件大小</span>
-              <strong id="resultSize"></strong>
+              <span>完成数量</span>
+              <strong id="resultCount">—</strong>
             </div>
             <div>
-              <span>图片尺寸</span>
-              <strong id="resultDimensions"></strong>
+              <span>总输出大小</span>
+              <strong id="resultSize">—</strong>
             </div>
             <div>
-              <span>调色板</span>
-              <strong id="resultColours"></strong>
+              <span>每张上限</span>
+              <strong id="resultLimit">—</strong>
             </div>
           </div>
+          <div id="resultFileList" class="result-file-list"></div>
         </div>
         <button id="downloadBtn" class="download-button" type="button">
           <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
             <path d="M12 4v11m0 0 4-4m-4 4-4-4M5 19h14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
           </svg>
-          下载 PNG
+          <span id="downloadLabel">下载全部 ZIP</span>
         </button>
       </section>
     </main>
