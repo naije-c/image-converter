@@ -1,0 +1,70 @@
+# JPG → PNG 本地转换器
+
+一个完全在本机运行的 JPG 转 PNG 小工具。支持拖拽上传，并可指定输出文件的最大大小。
+
+## 功能
+
+- 仅接受 JPG/JPEG 输入，输出标准 PNG
+- 可设置输出文件必须小于指定 MB
+- 转换和文件处理全部在本机完成，不会上传到第三方服务器
+- 自动预览、显示输出尺寸、颜色数量和实际文件大小
+- 支持 Windows、macOS 和 Linux
+
+## 直接使用（Windows）
+
+双击：
+
+```text
+启动图片转换器.bat
+```
+
+首次运行会自动打开浏览器。以后需要先双击该文件启动服务。
+
+## 手动启动
+
+```powershell
+npm install
+npm start
+```
+
+然后打开：
+
+```text
+http://127.0.0.1:5174
+```
+
+## 目标大小如何实现
+
+PNG 是无损格式，没有 JPEG 那种“质量百分比”参数。为了满足文件大小上限，工具依次尝试：
+
+1. 保持原分辨率，生成最多 256 色的 PNG
+2. 保留原分辨率，减少调色板颜色数量
+3. 调整分辨率，优先保留尽可能高的像素尺寸和 128 色调色板
+4. 如果目标仍无法达到，会明确提示失败，而不是输出超过上限的文件
+
+界面中的 1 MB 按 `1,000,000` 字节计算，适合常见上传限制的“小于 1 MB”要求。
+
+## 测试
+
+```powershell
+npm test
+```
+
+## 项目结构
+
+```text
+public/                 网页界面
+lib/convert.mjs         图片转换和目标大小搜索算法
+server.mjs              本地 HTTP 服务
+test/convert.test.mjs   自动化测试
+启动图片转换器.bat      Windows 一键启动
+```
+
+## Git 与推送
+
+项目已初始化为 `main` 分支。创建 GitHub 仓库后执行：
+
+```powershell
+git remote add origin https://github.com/<你的用户名>/<仓库名>.git
+git push -u origin main
+```

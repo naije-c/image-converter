@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="light" />
+    <meta name="theme-color" content="#f6f1e9" />
+    <meta name="description" content="完全在本地运行的 JPG 转 PNG 工具，可设定输出文件大小上限。" />
+    <title>JPG → PNG · 本地图片转换器</title>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <div class="page-glow page-glow-one" aria-hidden="true"></div>
+    <div class="page-glow page-glow-two" aria-hidden="true"></div>
+
+    <header class="site-header">
+      <a class="brand" href="/" aria-label="回到首页">
+        <span class="brand-mark" aria-hidden="true">P</span>
+        <span>像素工坊</span>
+      </a>
+      <span class="local-badge"><span class="local-dot" aria-hidden="true"></span>100% 本地处理</span>
+    </header>
+
+    <main class="page-shell">
+      <section class="hero" aria-labelledby="page-title">
+        <p class="eyebrow">JPG TO PNG · LOCAL FIRST</p>
+        <h1 id="page-title">把 JPG 变成<br /><span>刚刚好的 PNG。</span></h1>
+        <p class="hero-copy">
+          原图不上传、不经过云端。只需设置输出上限，工具会自动调整 PNG 的调色板和分辨率，让文件严格小于目标大小。
+        </p>
+        <div class="hero-notes" aria-label="产品特点">
+          <span>无需登录</span>
+          <span>批量处理预留</span>
+          <span>离线可用</span>
+        </div>
+      </section>
+
+      <section class="converter-card" aria-labelledby="converter-title">
+        <div class="card-heading">
+          <div>
+            <p class="step-label">STEP 01</p>
+            <h2 id="converter-title">选择一张 JPG</h2>
+          </div>
+          <span class="format-tag">JPG / JPEG</span>
+        </div>
+
+        <div id="dropZone" class="drop-zone" tabindex="0" role="button" aria-controls="fileInput">
+          <input id="fileInput" type="file" accept=".jpg,.jpeg,image/jpeg" hidden />
+          <div id="dropEmpty" class="drop-empty">
+            <div class="upload-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none">
+                <path d="M12 16V4m0 0L7.5 8.5M12 4l4.5 4.5M5 14.5v3.25A2.25 2.25 0 0 0 7.25 20h9.5A2.25 2.25 0 0 0 19 17.75V14.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
+            </div>
+            <p class="drop-title">拖入 JPG，或点击选择</p>
+            <p class="drop-hint">支持单张图片，最大 50 MB</p>
+          </div>
+
+          <div id="filePreview" class="file-preview" hidden>
+            <div class="preview-frame">
+              <img id="previewImage" alt="待转换图片预览" />
+            </div>
+            <div class="file-details">
+              <p class="file-kicker">已选择</p>
+              <p id="fileName" class="file-name"></p>
+              <p id="fileMeta" class="file-meta"></p>
+              <button id="changeFileBtn" class="text-button" type="button">重新选择</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="target-panel">
+          <div class="target-heading">
+            <div>
+              <p class="step-label">STEP 02</p>
+              <label for="targetSize">输出文件小于</label>
+            </div>
+            <div class="size-input-wrap">
+              <input id="targetSize" type="number" min="0.05" max="100" step="0.05" value="1" inputmode="decimal" />
+              <span>MB</span>
+            </div>
+          </div>
+
+          <div class="preset-row" aria-label="常用大小">
+            <button class="preset-button" type="button" data-size="0.1">0.1 MB</button>
+            <button class="preset-button is-active" type="button" data-size="1">1 MB</button>
+            <button class="preset-button" type="button" data-size="2">2 MB</button>
+            <button class="preset-button" type="button" data-size="5">5 MB</button>
+            <button class="preset-button" type="button" data-size="10">10 MB</button>
+          </div>
+
+          <p class="target-hint">PNG 没有类似 JPG 的质量滑杆。工具会保留尽可能高的分辨率，必要时减少颜色数量。</p>
+        </div>
+
+        <button id="convertBtn" class="primary-button" type="button" disabled>
+          <span class="button-label">转换为 PNG</span>
+          <span class="button-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="M5 12h14m-5-5 5 5-5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+          </span>
+        </button>
+
+        <div id="statusMessage" class="status-message" role="status" aria-live="polite">
+          请选择一张 JPG 图片开始转换
+        </div>
+      </section>
+
+      <section id="resultSection" class="result-section" aria-labelledby="result-title" hidden>
+        <div class="result-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none">
+            <path d="m5.5 12.5 4 4L18.5 7.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+        </div>
+        <div class="result-copy">
+          <p class="step-label">CONVERSION COMPLETE</p>
+          <h2 id="result-title">已生成符合大小要求的 PNG</h2>
+          <p id="resultSummary" class="result-summary"></p>
+          <div class="result-metrics">
+            <div>
+              <span>文件大小</span>
+              <strong id="resultSize"></strong>
+            </div>
+            <div>
+              <span>图片尺寸</span>
+              <strong id="resultDimensions"></strong>
+            </div>
+            <div>
+              <span>调色板</span>
+              <strong id="resultColours"></strong>
+            </div>
+          </div>
+        </div>
+        <button id="downloadBtn" class="download-button" type="button">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M12 4v11m0 0 4-4m-4 4-4-4M5 19h14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+          下载 PNG
+        </button>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <span>本地运行 · 文件不会离开这台电脑</span>
+      <span>Powered by Sharp / libvips</span>
+    </footer>
+
+    <script src="/app.js" type="module"></script>
+  </body>
+</html>
